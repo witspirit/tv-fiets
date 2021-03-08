@@ -1,0 +1,15 @@
+- alias: Coded MQTT Message on Sensor Threshold
+  description: The goal is to send out an MQTT message when a certain sensor value
+    reaches a critical value
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.fiets_credits
+    below: '10'    
+  condition: []
+  action:
+  - service: mqtt.publish
+    data:
+      topic: test/hass-automation
+      payload_template: TV Fiets Credits Dropped below threshold = {{ trigger.from_state }} -> {{ trigger.to_state
+        }} ({{ trigger.for }})
+  mode: single

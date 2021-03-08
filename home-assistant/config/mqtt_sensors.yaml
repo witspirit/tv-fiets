@@ -1,0 +1,6 @@
+- platform: mqtt
+  name: "Test Stream"
+  state_topic: "test/message"
+- platform: mqtt
+  name: "Fiets Credits"
+  state_topic: "home/living/fiets/credits"
