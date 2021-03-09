@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 import time
+import paho.mqtt.publish as publish
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -18,15 +19,23 @@ lastDetection = not GPIO.input(selectedDetector)
 lastCycle = time.time()
 while True:
     currentDetection = GPIO.input(selectedDetector)
+    currentTime = time.time()
+    
     if lastDetection == False and currentDetection == True:
-        cycleCredits+=1
-        currentTime = time.time()
+        cycleCredits+=1    
         cycleTime = currentTime - lastCycle
         lastCycle = currentTime
         print('Credits = ', cycleCredits, ' Revolution Duration = ', cycleTime)
+        publish.single("home/living/fiets/credits", cycleCredits, hostname="127.0.0.1")
     
     if currentDetection != lastDetection:
-    #    print(round(time.time(),0),' Change detected: ', currentDetection)
-        lastDetection = currentDetection    
+        # print(round(time.time(),0),' Change detected: ', currentDetection)
+        lastDetection = currentDetection
+        
+    if currentTime - lastCycle > 3 and cycleCredits > 1:        
+        cycleCredits+=-1
+        print('Idling...losing credits. Credits = ', cycleCredits)
+        publish.single("home/living/fiets/credits", cycleCredits, hostname="127.0.0.1")
+    
     time.sleep(0.01)
 
