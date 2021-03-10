@@ -4,10 +4,10 @@ import paho.mqtt.publish as publish
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
-SIMPLE_REED = 4
-GPIO.setup(SIMPLE_REED, GPIO.IN)
+HALL_SWITCH = 23
+GPIO.setup(HALL_SWITCH, GPIO.IN)
 
-selectedDetector = SIMPLE_REED
+selectedDetector = HALL_SWITCH
 
 cycleCredits = 0
 
@@ -17,6 +17,7 @@ cycleCredits = 0
 
 lastDetection = not GPIO.input(selectedDetector)
 lastCycle = time.time()
+lastDepreciation = time.time();
 while True:
     currentDetection = GPIO.input(selectedDetector)
     currentTime = time.time()
@@ -29,12 +30,13 @@ while True:
         publish.single("home/living/fiets/credits", cycleCredits, hostname="127.0.0.1")
     
     if currentDetection != lastDetection:
-        # print(round(time.time(),0),' Change detected: ', currentDetection)
+        print(round(time.time(),0),' Change detected: ', currentDetection)
         lastDetection = currentDetection
         
-    if currentTime - lastCycle > 3 and cycleCredits > 1:        
+    if currentTime - lastDepreciation > 3 and cycleCredits > 0:        
         cycleCredits+=-1
         print('Idling...losing credits. Credits = ', cycleCredits)
+        lastDepreciation = time.time()
         publish.single("home/living/fiets/credits", cycleCredits, hostname="127.0.0.1")
     
     time.sleep(0.01)
