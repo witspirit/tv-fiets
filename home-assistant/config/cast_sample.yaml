@@ -1,0 +1,10 @@
+# Example of working Google Cast from Plex media
+# The configuration is slightly different from documented !
+# -> library_name to identify the library
+
+service: media_player.play_media
+data:
+  media_content_type: MUSIC
+  media_content_id: 'plex://{"library_name":"Music-Bert", "artist_name":"Paul Simon", "track_name":"Graceland"}'
+target:
+  entity_id: media_player.zolder_mini_luidspreker
