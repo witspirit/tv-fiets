@@ -1,15 +1,190 @@
-- alias: Coded MQTT Message on Sensor Threshold
-  description: The goal is to send out an MQTT message when a certain sensor value
-    reaches a critical value
+- alias: "Fiets - Klaar voor de start"
+  description: "Kondig start aan"
   trigger:
   - platform: numeric_state
     entity_id: sensor.fiets_credits
-    below: '10'    
-  condition: []
+    above: '4'    
+  condition:
+  - condition: state
+    entity_id: sensor.fiets_tv_stand
+    state: "False"
   action:
   - service: mqtt.publish
     data:
-      topic: test/hass-automation
-      payload_template: TV Fiets Credits Dropped below threshold = {{ trigger.from_state }} -> {{ trigger.to_state
-        }} ({{ trigger.for }})
+      topic: fiets/aankondigingen
+      payload_template: Fiets activiteit waargenomen, we activeren zo meteen de TV !
+  - service: mqtt.publish
+    data:
+      topic: fiets/automation-debug
+      payload_template: Fiets - Klaar voor de start @ {{ trigger.from_state.state }} -> {{ trigger.to_state.state }}
   mode: single
+- alias: "Fiets - Start"
+  description: "Activeer TV"
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.fiets_credits
+    above: '9'    
+  condition:
+  - condition: state
+    entity_id: sensor.fiets_tv_stand
+    state: "False"
+  action:
+  - service: mqtt.publish
+    data:
+      topic: fiets/aankondigingen
+      payload_template: Goed bezig ! TV gaat aan !
+  - service: mqtt.publish
+    data:
+      topic: fiets/automation-debug
+      payload_template: Fiets - Start @ {{ trigger.from_state.state }} -> {{ trigger.to_state.state }}
+  - service: mqtt.publish
+    data:
+      topic: fiets/tv
+      payload_template: on
+  mode: single
+- alias: "Fiets - Waarschuwing"
+  description: "Waarschuw dat de credits aan het zakken zijn"
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.fiets_credits
+    below: '20'    
+  condition:
+  - condition: state
+    entity_id: sensor.fiets_tv_stand
+    state: "True"
+  action:
+  - service: mqtt.publish
+    data:
+      topic: fiets/aankondigingen
+      payload_template: Opgelet je credits zijn erg laag. Blijven fietsen als je de TV aan wil houden. 
+  - service: mqtt.publish
+    data:
+      topic: fiets/automation-debug
+      payload_template: Fiets - Waarschuwing @ {{ trigger.from_state.state }} -> {{ trigger.to_state.state }}
+  mode: single
+- alias: "Fiets - Waarschuwing Uitval"
+  description: "Waarschuw dat de TV zodra zal uitvallen"
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.fiets_credits
+    below: '5'    
+  condition:
+  - condition: state
+    entity_id: sensor.fiets_tv_stand
+    state: "True"
+  action:
+  - service: mqtt.publish
+    data:
+      topic: fiets/aankondigingen
+      payload_template: De TV zal zo meteen uitvallen...
+  - service: mqtt.publish
+    data:
+      topic: fiets/automation-debug
+      payload_template: Fiets - Waarschuwing Uitval @ {{ trigger.from_state.state }} -> {{ trigger.to_state.state }}
+  mode: single
+- alias: "Fiets - Stop"
+  description: "Schakel TV uit"
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.fiets_credits
+    below: '1'    
+  condition:
+  - condition: state
+    entity_id: sensor.fiets_tv_stand
+    state: "True"
+  action:
+  - service: mqtt.publish
+    data:
+      topic: fiets/aankondigingen
+      payload_template: Credits opgebruikt. TV gaat uit.
+  - service: mqtt.publish
+    data:
+      topic: fiets/automation-debug
+      payload_template: Fiets - Stop @ {{ trigger.from_state.state }} -> {{ trigger.to_state.state }}
+  - service: mqtt.publish
+    data:
+      topic: fiets/tv
+      payload_template: off
+  mode: single
+- alias: "Fiets - Aankondigingen"
+  description: "Speel aankondigingen af"
+  trigger:
+  - platform: mqtt
+    topic: fiets/aankondigingen
+  condition:
+    - condition: state
+      entity_id: input_boolean.fiets_tv_audio_feedback
+      state: "on"      
+  action:
+  - service: tts.google_translate_say
+    data_template:
+      #entity_id: media_player.zolder_mini_luidspreker
+      entity_id: media_player.cmt_sx7b_living
+      language: nl
+      message: "{{ trigger.payload }}"
+  - service: mqtt.publish
+    data:
+      topic: fiets/automation-debug
+      payload_template: Fiets - Aankondigingen @ {{ trigger.payload }}
+  mode: restart
+- alias: "Fiets - TV Aan"
+  description: "Schakel de TV aan"
+  trigger:
+  - platform: state
+    entity_id: sensor.fiets_tv_stand
+    to: "True"
+  condition:
+    - condition: state
+      entity_id: input_boolean.fiets_tv_koppeling
+      state: "on"  
+  action:
+  - service: switch.turn_on
+    target:
+      entity_id: switch.tv_switch
+    data: {}
+  - service: mqtt.publish
+    data:
+      topic: fiets/automation-debug
+      payload_template: Fiets - TV Aan
+  mode: single
+- alias: "Fiets - TV Uit"
+  description: "Schakel de TV uit"
+  trigger:
+  - platform: state
+    entity_id: sensor.fiets_tv_stand
+    to: "False"
+  condition:
+    - condition: state
+      entity_id: input_boolean.fiets_tv_koppeling
+      state: "on"  
+  action:
+  - service: switch.turn_off
+    target:
+      entity_id: switch.tv_switch
+    data: {}
+  - service: mqtt.publish
+    data:
+      topic: fiets/automation-debug
+      payload_template: Fiets - TV Uit
+  mode: single
+
+
+#service: tts.google_translate_say
+#data:
+#  entity_id: media_player.zolder_mini_luidspreker
+#  message: Wauw, je hebt al 25 credits !
+#  language: nl
+
+# According to the docs, the below approach should work... but it doesn't ...
+#service: tts.google_translate_say
+#data:
+#  entity_id: >
+#	{% if is_state('input_select.fiets_audio_feedback', 'Living') %}
+#          media_player.cmt_sx7b_living
+#        {% elif is_state('input_select.fiets_audio_feedback', 'Zolder') %}
+#          media_player.zolder_mini_luidspreker            
+#        {% else %}
+#          none    
+#        {% endif %}
+#  message: Wauw, je hebt al 25 credits !
+#  language: nl

@@ -3,4 +3,13 @@
   state_topic: "test/message"
 - platform: mqtt
   name: "Fiets Credits"
-  state_topic: "home/living/fiets/credits"
+  state_topic: "fiets/credits"
+- platform: mqtt
+  name: "Fiets TV Stand"
+  state_topic: "fiets/tv"
+- platform: mqtt
+  name: "Fiets Aankondingen"
+  state_topic: "fiets/aankondigingen"
+- platform: mqtt
+  name: "Fiets Automation Debug"
+  state_topic: "fiets/automation-debug"

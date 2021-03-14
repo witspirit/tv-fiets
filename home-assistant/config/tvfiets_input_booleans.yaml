@@ -1,0 +1,8 @@
+fiets_tv_koppeling:
+  name: Bepaal de koppeling tussen de fiets en de TV
+  icon: mdi:bike
+  initial: false
+fiets_tv_audio_feedback:
+  name: Bepaal of er geluidsinformatie wordt gegeven over je fiets
+  icon: mdi:cast-audio
+  initial: false

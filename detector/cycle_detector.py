@@ -14,6 +14,8 @@ cycleCredits = 0
 # A detection should be a HIGH, LOW, HIGH sequence
 # So basically whenever we see a LOW -> HIGH transition we can count
 
+def publishCredits():
+    publish.single('fiets/credits', cycleCredits, hostname='127.0.0.1')
 
 lastDetection = not GPIO.input(selectedDetector)
 lastCycle = time.time()
@@ -27,7 +29,7 @@ while True:
         cycleTime = currentTime - lastCycle
         lastCycle = currentTime
         print('Credits = ', cycleCredits, ' Revolution Duration = ', cycleTime)
-        publish.single("home/living/fiets/credits", cycleCredits, hostname="127.0.0.1")
+        publishCredits()
     
     if currentDetection != lastDetection:
         print(round(time.time(),0),' Change detected: ', currentDetection)
@@ -37,7 +39,7 @@ while True:
         cycleCredits+=-1
         print('Idling...losing credits. Credits = ', cycleCredits)
         lastDepreciation = time.time()
-        publish.single("home/living/fiets/credits", cycleCredits, hostname="127.0.0.1")
+        publishCredits()
     
     time.sleep(0.01)
 
