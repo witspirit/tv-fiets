@@ -1,3 +1,17 @@
+- alias: "Fiets - Init"
+  description: "Zorg dat state bruikbaar staat bij opstarten"
+  trigger:
+  - platform: event
+    event_type: homeassistant_start
+  action:
+  - service: mqtt.publish
+    data: 
+      topic: fiets/tv
+      payload_template: off
+  - service: mqtt.publish
+    data:
+      topic: fiets/automation-debug
+      payload_template: Fiets - Init  
 - alias: "Fiets - Klaar voor de start"
   description: "Kondig start aan"
   trigger:
