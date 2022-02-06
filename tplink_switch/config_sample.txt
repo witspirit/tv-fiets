@@ -1,0 +1,9 @@
+# Make a copy of this file at ~/.tplink_config.txt
+# Fill in your config data
+
+[kasa]
+username=yourKasaUserNameGoesHere
+password=yourKasaPasswordGoesHere
+
+[device]
+name=TV Switch
