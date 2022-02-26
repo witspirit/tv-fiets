@@ -10,8 +10,16 @@
       payload_template: off
   - service: mqtt.publish
     data:
+      topic: fiets/credits
+      payload_template: 0
+  - service: mqtt.publish
+    data:
+      topic: fiets/aankondigingen
+      payload_template: Fiets geïnitialiseerd
+  - service: mqtt.publish
+    data:
       topic: fiets/automation-debug
-      payload_template: Fiets - Init  
+      payload_template: Fiets - Init
 - alias: "Fiets - Klaar voor de start"
   description: "Kondig start aan"
   trigger:

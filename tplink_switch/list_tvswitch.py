@@ -1,5 +1,5 @@
-from tplink_api import list_device, device_name
+from tplink_api import list_sys_info, device_name
 
 import asyncio
             
-asyncio.run(list_device(device_name))
+asyncio.run(list_sys_info(device_name))

@@ -44,7 +44,8 @@ async def list_sys_info(name):
 async def is_on(name):
     device = await device_manager.find_device(name)
     if device:
-        return device.device_info.status
+        sys_info = await device.get_sys_info()
+        return sys_info.relay_state
     else:
         print(f'Device {name} was not found')
         return 0
